@@ -55,48 +55,52 @@ There is an updated version available on the App Store. Would you like to upgrad
       String buttonUpgradeText = 'Upgrade',
       String buttonCancelText = 'Cancel',
       bool forceUpgrade = false}) async {
-    final isUpdateAvailable = await updateIsAvailable();
-    if (!isUpdateAvailable) {
-      return;
-    }
-    if (context.mounted) {
-      return showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          final buttons = <Widget>[];
+    try {
+      final isUpdateAvailable = await updateIsAvailable();
+      if (!isUpdateAvailable) {
+        return;
+      }
+      if (context.mounted) {
+        return showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) {
+            final buttons = <Widget>[];
 
-          if (!forceUpgrade) {
+            if (!forceUpgrade) {
+              buttons.add(TextButton(
+                child: Text(buttonCancelText),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ));
+            }
+
             buttons.add(TextButton(
-              child: Text(buttonCancelText),
-              onPressed: () {
-                Navigator.of(context).pop();
+              child: Text(buttonUpgradeText),
+              onPressed: () async {
+                final url = _response.url;
+
+                if (url != '' && await canLaunch(url)) {
+                  await launch(url, forceSafariVC: false);
+                }
+
+                if (!forceUpgrade) {
+                  Navigator.of(context).pop();
+                }
               },
             ));
-          }
 
-          buttons.add(TextButton(
-            child: Text(buttonUpgradeText),
-            onPressed: () async {
-              final url = _response.url;
-
-              if (url != '' && await canLaunch(url)) {
-                await launch(url, forceSafariVC: false);
-              }
-
-              if (!forceUpgrade) {
-                Navigator.of(context).pop();
-              }
-            },
-          ));
-
-          return AlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: buttons,
-          );
-        },
-      );
+            return AlertDialog(
+              title: Text(title),
+              content: Text(message),
+              actions: buttons,
+            );
+          },
+        );
+      }
+    } catch (e) {
+      return;
     }
   }
 
