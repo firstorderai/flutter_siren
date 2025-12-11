@@ -97,6 +97,39 @@ FutureBuilder<bool>(
       );
     }
   }
+  }
+);
+```
+
+## Custom UI (Advanced)
+
+If you need full control over the update dialog (e.g., using your own design or non-Material widgets), use `promptUpdateWithCustomUI`. 
+
+This method ensures your widget is centered and not stretched to full screen.
+
+```dart
+Siren().promptUpdateWithCustomUI(
+  context,
+  builder: (context, response) {
+    return Container(
+      width: 300,
+      height: 200,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text('New version: ${response.version}'),
+          ElevatedButton(
+            onPressed: () => Siren().launchStore(response.url),
+            child: Text('Update'),
+          ),
+        ],
+      ),
+    );
+  },
 );
 ```
 

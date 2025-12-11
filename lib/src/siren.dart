@@ -79,11 +79,7 @@ There is an updated version available on the App Store. Would you like to upgrad
             buttons.add(TextButton(
               child: Text(buttonUpgradeText),
               onPressed: () async {
-                final url = _response.url;
-
-                if (url != '' && await canLaunch(url)) {
-                  await launch(url, forceSafariVC: false);
-                }
+                await launchStore(_response.url);
 
                 if (!forceUpgrade) {
                   Navigator.of(context).pop();
@@ -101,6 +97,62 @@ There is an updated version available on the App Store. Would you like to upgrad
       }
     } catch (e) {
       return;
+    }
+  }
+
+  /// custom update dialog
+  /// 使用方式：Siren().promptUpdateWithCustomUI(context, builder: (context, response) {
+  /// return Container(
+  ///   width: 150.sr,
+  ///   height: 300.sr,
+  ///   decoration: BoxDecoration(color: AppColors.errorDark, borderRadius: BorderRadius.circular(20.sr)),
+  ///   child: Column(
+  ///     children: [
+  ///       Text(response.version),
+  ///       Text(response.url),
+  ///       ElevatedButton(onPressed: () {
+  /// final url = response.url;
+  ///  if (url != '' && await canLaunch(url)) {
+  ///    await launch(url, forceSafariVC: false);
+  ///  }
+  /// }, child: const Text('升级')),
+  ///     ],
+  ///   ),
+  /// });
+  Future<void> promptUpdateWithCustomUI(BuildContext context,
+      {required Widget Function(BuildContext, SirenStoreResponse) builder}) async {
+    try {
+      final isUpdateAvailable = await updateIsAvailable();
+      if (!isUpdateAvailable) {
+        return;
+      }
+
+      if (context.mounted) {
+        return showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) {
+            return Center(
+              child: Material(
+                type: MaterialType.transparency,
+                child: builder(context, _response),
+              ),
+            );
+          },
+        );
+      }
+    } catch (e) {
+      return;
+    }
+  }
+
+  Future<void> launchStore(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      // 对应旧的 canLaunch
+      await launchUrl(uri, mode: LaunchMode.externalApplication); // 对应 forceSafariVC: false
+    } else {
+      throw Exception('Could not launch $url');
     }
   }
 
@@ -134,11 +186,7 @@ There is an updated version available on the App Store. Would you like to upgrad
                 buttons.add(TextButton(
                   child: Text(buttonUpgradeText),
                   onPressed: () async {
-                    final url = _response.url;
-
-                    if (url != '' && await canLaunch(url)) {
-                      await launch(url, forceSafariVC: false);
-                    }
+                    await launchStore(_response.url);
 
                     if (!forceUpgrade) {
                       Navigator.of(context).pop();
