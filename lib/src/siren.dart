@@ -40,6 +40,14 @@ class Siren {
     return Version.parse(currentVersion);
   }
 
+  /// This method will get the store url of your app.
+  Future<String> get storeUrl async {
+    if (_response.url.isEmpty) {
+      final _ = await storeVersion;
+    }
+    return _response.url;
+  }
+
   /// This method checks for an update in the application store and returns if there is a newer version than the local one.
   Future<bool> updateIsAvailable() async {
     final localVer = await localVersion;
